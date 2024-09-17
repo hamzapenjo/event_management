@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <link rel="icon" href="/images/goevents5.png" type="image/x-icon" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+      .img-account-profile {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      .notifications {
+        width: 300px;
+        height: 0;
+        opacity: 0;
+        position: absolute;
+        top: 63px;
+        right: 62px;
+        border-radius: 5px 0px 5px 5px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+          0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        z-index: 999;
+        overflow: hidden;
+        transition: height 0.3s, opacity 0.3s;
+      }
+
+      .notifications.open {
+        height: auto;
+        opacity: 1;
+        margin-right: 20%;
+        margin-top: 0.15%;
+      }
+
+      .notifications h2 {
+        font-size: 14px;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        color: #999;
+      }
+
+      .notifications-item {
+        display: flex;
+        border-bottom: 1px solid #eee;
+        padding: 6px 9px;
+        margin-bottom: 0px;
+        cursor: pointer;
+      }
+
+      .notifications-item:hover {
+        background-color: #eee;
+      }
+
+      .notifications-item .text h4 {
+        color: #777;
+        font-size: 16px;
+        margin-top: 3px;
+      }
+
+      .notifications-item .text p {
+        color: #aaa;
+        font-size: 12px;
+      }
+
+      .icon {
+        cursor: pointer;
+        position: relative;
+      }
+
+      .icon img {
+        width: 26px;
+      }
+
+      .icon span {
+        background: #f00;
+        padding: 5px;
+        border-radius: 50%;
+        color: #fff;
+        position: absolute;
+        top: -5px;
+        right: -10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-xl px-4 mt-4">
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+          <div class="navbar-nav ml-auto">
+            <div class="nav-item dropdown">
+              <div class="icon" id="bell">
+                <img src="/images/bell.png" alt="notification-icon" />
+                <span id="notif-count">0</span>
+              </div>
+            </div>
+            <div class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                Account
+              </a>
+              <div
+                class="dropdown-menu dropdown-menu-right"
+                aria-labelledby="navbarDropdown"
+              >
+                <a class="dropdown-item" href="/organizer/dashboard"
+                  >My Dashboard</a
+                >
+                <a class="dropdown-item" href="/logout">Logout</a>
+                <button id="dark-mode-toggle" class="dropdown-item">Toggle Dark Mode</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="notifications" id="notification-box">
+        <h2>Notifications</h2>
+        <div id="notification-list">
+        </div>
+      </div>
+
+      <hr class="mt-0 mb-4" />
+
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="card mb-4 mb-xl-0">
+            <div class="card-header">Profile Picture</div>
+            <div class="card-body text-center">
+              <img
+                class="img-account-profile rounded-circle mb-2"
+                src="<%= user.profile_image ? '/uploads/' + user.profile_image : 'https://via.placeholder.com/150' %>"
+                alt="Profile Image"
+              />
+              <div class="small font-italic text-muted mb-4">
+                JPG or PNG no larger than 5 MB
+              </div>
+              <form
+                method="POST"
+                action="/organizer/profile/update-image"
+                enctype="multipart/form-data"
+              >
+                <input
+                  class="form-control"
+                  type="file"
+                  id="profile_image"
+                  name="profile_image"
+                />
+                <button class="btn btn-primary mt-3" type="submit">
+                  Upload new image
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-header">Account Details</div>
+            <div class="card-body">
+              <form action="/organizer/profile/update-info" method="POST">
+                <div class="row gx-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="small mb-1" for="first_name"
+                      >First name</label
+                    >
+                    <input
+                      class="form-control"
+                      id="first_name"
+                      type="text"
+                      name="first_name"
+                      value="<%= user.first_name %>"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="small mb-1" for="last_name">Last name</label>
+                    <input
+                      class="form-control"
+                      id="last_name"
+                      type="text"
+                      name="last_name"
+                      value="<%= user.last_name %>"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="small mb-1" for="email">Email address</label>
+                  <input
+                    class="form-control"
+                    id="email"
+                    type="email"
+                    name="email"
+                    value="<%= user.email %>"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="small mb-1" for="bio">Bio</label>
+                  <textarea class="form-control" id="bio" name="bio">
+                  <%= user.bio %></textarea
+                  >
+                </div>
+                <button class="btn btn-primary" type="submit">
+                  Save changes
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+              <div class="card-header">Change Password</div>
+              <div class="card-body">
+                <form id="changePasswordForm" action="/organizer/profile/change-password" method="POST">
+                  <div class="mb-3">
+                    <label class="small mb-1" for="current_password">Current Password</label>
+                    <input class="form-control" id="current_password" type="password" name="current_password" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="small mb-1" for="new_password">New Password</label>
+                    <input class="form-control" id="new_password" type="password" name="new_password" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="small mb-1" for="confirm_password">Confirm New Password</label>
+                    <input class="form-control" id="confirm_password" type="password" name="confirm_password" required />
+                  </div>
+                  <button class="btn btn-primary" type="submit">Update Password</button>
+                </form>
+                <div id="passwordMessage" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+          
+          <script>
+            document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+              e.preventDefault();
+
+              const currentPassword = document.getElementById('current_password').value;
+              const newPassword = document.getElementById('new_password').value;
+              const confirmPassword = document.getElementById('confirm_password').value;
+
+              if (newPassword !== confirmPassword) {
+                document.getElementById('passwordMessage').innerHTML = '<div class="alert alert-danger">Passwords do not match!</div>';
+                return;
+              }
+
+              const response = await fetch('/organizer/profile/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword, newPassword })
+              });
+
+              const result = await response.json();
+
+              const passwordMessage = document.getElementById('passwordMessage');
+              if (result.success) {
+                passwordMessage.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+              } else {
+                passwordMessage.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+              }
+
+              document.getElementById('current_password').value = '';
+              document.getElementById('new_password').value = '';
+              document.getElementById('confirm_password').value = '';
+            });
+          </script>
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              const darkModeToggle = document.getElementById("dark-mode-toggle");
+              const bellIcon = document.getElementById("bell");
+              const notificationBox = document.getElementById("notification-box");
+              let notificationsVisible = false;
+
+              bellIcon.addEventListener("click", () => {
+                notificationsVisible = !notificationsVisible;
+                notificationBox.classList.toggle("open", notificationsVisible);
+              });
+
+              function fetchNotifications() {
+                fetch("/organizer/notifications")
+                  .then((response) => response.json())
+                  .then((data) => {
+                    const notificationList =
+                      document.getElementById("notification-list");
+                    notificationList.innerHTML = "";
+
+                    if (data.notifications.length > 0) {
+                      document.getElementById("notif-count").textContent =
+                        data.notifications.length;
+
+                      data.notifications.forEach((notification) => {
+                        const div = document.createElement("div");
+                        div.classList.add("notifications-item");
+
+                        const textDiv = document.createElement("div");
+                        textDiv.classList.add("text");
+
+                        const title = document.createElement("h4");
+                        title.textContent = notification.title;
+                        const message = document.createElement("p");
+                        message.textContent = notification.message;
+
+                        textDiv.appendChild(title);
+                        textDiv.appendChild(message);
+                        div.appendChild(textDiv);
+
+                        div.addEventListener("click", () => {
+                          markNotificationAsRead(notification.id, div);
+                        });
+
+                        notificationList.appendChild(div);
+                      });
+                    } else {
+                      document.getElementById("notif-count").textContent = "0";
+                      const noNotif = document.createElement("p");
+                      noNotif.textContent = "";
+                      notificationList.appendChild(noNotif);
+                    }
+                  })
+                  .catch((error) =>
+                    console.error("Error fetching notifications:", error)
+                  );
+              }
+
+              function markNotificationAsRead(notificationId, notificationItem) {
+                fetch(`/organizer/notifications/${notificationId}/read`, {
+                  method: "POST",
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    if (data.success) {
+                      notificationItem.remove();
+
+                      const notificationCountElement = document.getElementById(
+                        "notif-count"
+                      );
+                      const currentCount = parseInt(
+                        notificationCountElement.textContent,
+                        10
+                      );
+                      notificationCountElement.textContent = currentCount - 1;
+                    }
+                  })
+                  .catch((error) =>
+                    console.error("Error marking notification as read:", error)
+                  );
+              }
+
+              setInterval(fetchNotifications, 10000);
+              fetchNotifications();
+
+              darkModeToggle.addEventListener("click", function () {
+                document.body.classList.toggle("dark-mode");
+
+                const isDarkMode = document.body.classList.contains("dark-mode");
+                localStorage.setItem("darkMode", isDarkMode);
+              });
+
+              if (localStorage.getItem("darkMode") === "true") {
+                document.body.classList.add("dark-mode");
+              }
+            });
+          </script>
+  </body>
+</html>

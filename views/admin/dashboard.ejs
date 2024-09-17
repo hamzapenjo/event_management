@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <link rel="icon" href="/images/goevents5.png" type="image/x-icon" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <h3>Admin Panel</h3>
+        </div>
+        <ul class="list-unstyled components">
+          <li><a href="/admin/dashboard">Dashboard</a></li>
+          <li><a href="/admin/users">Users</a></li>
+          <li><a href="/admin/events">Events</a></li>
+          <li><a href="/admin/event-types">Event Types</a></li>
+          <li><a href="/admin/locations">Locations</a></li>
+        </ul>
+      </nav>
+
+      <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <div class="container-fluid">
+            <div class="navbar-nav ml-auto">
+              <div class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  id="navbarDropdown"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Account
+                </a>
+                <div
+                  class="dropdown-menu dropdown-menu-right"
+                  aria-labelledby="navbarDropdown"
+                >
+                  <a class="dropdown-item" href="/logout">Logout</a>
+                  <button id="dark-mode-toggle" class="dropdown-item">Toggle Dark Mode</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container mt-4">
+          <h2>Dashboard Overview</h2>
+          <br>
+          <div class="row d-flex">
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Total Users</h5>
+                  <p class="card-text">Number of registered users</p>
+                  <h3><%= totalUsers %></h3>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Total Organizers</h5>
+                  <p class="card-text">Number of event organizers</p>
+                  <h3><%= totalOrganizers %></h3>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Total Events</h5>
+                  <p class="card-text">Number of organized events</p>
+                  <h3><%= totalEvents %></h3>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Total Registrations</h5>
+                  <p class="card-text">Number of event registrations</p>
+                  <h3><%= totalRegistrations %></h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row d-flex">
+            <div class="col-lg-6 mt-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Users by Role</h5>
+                  <canvas
+                    id="usersByRoleChart"
+                    width="400"
+                    height="400"
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6 mt-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Events by Category</h5>
+                  <canvas
+                    id="eventsByCategoryChart"
+                    width="400"
+                    height="400"
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12 mt-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Recent Registrations</h5>
+                <ul class="list-group">
+                  <% recentUsers.forEach(user => { %>
+                  <li class="list-group-item">
+                    <strong
+                      ><%= user.first_name %> <%= user.last_name %></strong
+                    >
+                    (<%= user.email %>) - Registered on <%= new
+                    Date(user.created_at).toLocaleDateString() %>
+                  </li>
+                  <% }); %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const usersByRoleData = {
+          labels: ['Admin', 'Organizer', 'User'],
+          datasets: [{
+              label: 'Users by Role',
+              data: [<%= totalAdmins %>, <%= totalOrganizers %>, <%= totalUsers - totalOrganizers - totalAdmins %>],
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+          }]
+      };
+
+      const ctx1 = document.getElementById('usersByRoleChart').getContext('2d');
+      const usersByRoleChart = new Chart(ctx1, {
+          type: 'pie',
+          data: usersByRoleData,
+      });
+    </script>
+
+    <script>
+      fetch("/admin/events/categories")
+        .then((response) => response.json())
+        .then((data) => {
+          const categories = Object.keys(data);
+          const counts = categories.map((category) => data[category]);
+
+          const ctx = document
+            .getElementById("eventsByCategoryChart")
+            .getContext("2d");
+          const eventsByCategoryChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "Number of Events",
+                  data: counts,
+                  backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true,
+                },
+              },
+            },
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching event categories:", error);
+          alert("Failed to load event category data.");
+        });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+        darkModeToggle.addEventListener("click", function () {
+          document.body.classList.toggle("dark-mode");
+
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          localStorage.setItem("darkMode", isDarkMode);
+        });
+
+        if (localStorage.getItem("darkMode") === "true") {
+          document.body.classList.add("dark-mode");
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+:root {
+--background-color: #f4f4f4;
+--text-color: black;
+--card-background-color: white;
+--navbar-background-color: white;
+--footer-background-color: #444;
+--footer-text-color: white;
+--accordion-button-bg: white;
+
+/* Dark Mode Variables */
+--background-color-dark: #121212;
+--text-color-dark: white;
+--card-background-color-dark: #242424;
+--navbar-background-color-dark: #444;
+--footer-background-color-dark: #444;
+--footer-text-color-dark: #ccc;
+--accordion-button-bg-dark: #444;
+}
+
+body {
+background-color: var(--background-color);
+color: var(--text-color);
+transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode {
+--background-color: var(--background-color-dark);
+--text-color: var(--text-color-dark);
+--card-background-color: var(--card-background-color-dark);
+--navbar-background-color: var(--navbar-background-color-dark);
+--footer-background-color: var(--footer-background-color-dark);
+--footer-text-color: var(--footer-text-color-dark);
+--accordion-button-bg: var(--accordion-button-bg-dark);
+}
+
+.hero-section {
+padding-top: 60px;
+padding-bottom: 60px;
+background-color: var(--background-color);
+color: var(--text-color);
+}
+
+.features-section .card,
+.testimonials-section .card {
+background-color: var(--card-background-color);
+color: var(--text-color);
+transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode .features-section {
+background-color: #444; 
+}
+.dark-mode .hero-section,
+.dark-mode .features-section .card,
+.dark-mode .testimonials-section .card {
+background-color: var(--background-color-dark);
+color: var(--text-color-dark);
+}
+
+.accordion-button {
+background-color: var(--accordion-button-bg);
+color: var(--text-color);
+}
+
+.footer {
+background-color: var(--footer-background-color);
+color: var(--footer-text-color);
+}
+
+.dark-mode .accordion-button {
+background-color: var(--accordion-button-bg-dark);
+}
+
+.dark-mode .footer {
+background-color: var(--footer-background-color-dark);
+color: var(--footer-text-color-dark);
+}
+
+.dark-mode .testimonials-section {
+background-color: #444;
+}
+
+.hero-logo {
+width: 300px;
+}

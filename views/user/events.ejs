@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <link rel="icon" href="/images/goevents5.png" type="image/x-icon" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <h3>User Panel</h3>
+        </div>
+        <ul class="list-unstyled components">
+          <li><a href="/user/dashboard">Dashboard</a></li>
+          <li><a href="/user/events" class="active">Events</a></li>
+          <li><a href="/user/registrations">My Registrations</a></li>
+        </ul>
+      </nav>
+
+      <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <div class="container-fluid">
+            <div class="navbar-nav ml-auto">
+              <div class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  id="navbarDropdown"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Account
+                </a>
+                <div
+                  class="dropdown-menu dropdown-menu-right"
+                  aria-labelledby="navbarDropdown"
+                >
+                  <a class="dropdown-item" href="/logout">Logout</a>
+                  <button id="dark-mode-toggle" class="dropdown-item">
+                    Toggle Dark Mode
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container mt-4">
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Search events, locations..."
+              onkeyup="searchEvents()"
+            />
+          </div>
+          <h2>All Events</h2>
+
+          <table class="table table-striped mt-4">
+            <thead>
+              <tr>
+                <th>Event Name</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Organizer</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% events.forEach(event => { %>
+              <tr>
+                <td>
+                  <a
+                    class="klik"
+                    href="#"
+                    onclick="showEventDetails(<%= event.id %>)"
+                  >
+                    <%= event.name %>
+                  </a>
+                </td>
+                <td><%= new Date(event.date).toLocaleDateString() %></td>
+                <td><%= event.location_name %></td>
+                <td><%= event.category %></td>
+                <td>
+                  <a
+                    href="#"
+                    class="klik"
+                    onclick="showOrganizerDetails(<%= event.organizer_id %>)"
+                  >
+                    <%= event.organizerName %>
+                  </a>
+                </td>
+                <td>
+                  <% if (event.isRegistered) { %>
+                  <button class="btn btn-success btn-sm" disabled>
+                    Registered
+                  </button>
+                  <% } else { %>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    id="register-btn-<%= event.id %>"
+                    onclick="registerForEvent(<%= event.id %>)"
+                  >
+                    Register
+                  </button>
+                  <% } %>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="eventDetailsModal"
+      tabindex="-1"
+      aria-labelledby="eventDetailsModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="eventDetailsModalLabel">
+              Event Details
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function registerForEvent(eventId) {
+        fetch(`/user/events/register/${eventId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const button = document.getElementById(`register-btn-${eventId}`);
+              button.textContent = "Registered";
+              button.classList.remove("btn-primary");
+              button.classList.add("btn-success");
+              button.disabled = true;
+            } else {
+              alert("Failed to register for the event.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Failed to process request.");
+          });
+      }
+
+      function showEventDetails(eventId) {
+        $("#eventDetailsModal").modal("show");
+        fetch(`/user/event-details/${eventId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const date = new Date(data.date); 
+            const formattedDate = date.toLocaleDateString("bs", {
+              day: "numeric",
+              month: "numeric",
+              year: "numeric",
+            });
+
+            const modalBody = document.querySelector(
+              "#eventDetailsModal .modal-body"
+            );
+            modalBody.innerHTML = `
+                <p>Name: ${data.name}</p>
+                <p>Description: ${data.description}</p>
+                <p>Date: ${formattedDate}</p> <!-- Ovdje koristimo formatirani datum -->
+                <p>Time: ${data.time}</p>
+                <p>Category: ${data.category}</p>
+                <p>Ticket Price: ${data.ticket_price}</p>
+                <p>Organizer: ${data.organizer_name}</p>
+                <p>Location: ${data.location_name}</p>
+              `;
+          })
+          .catch((error) => {
+            console.error("Error loading event details:", error);
+            modalBody.innerHTML = `<p>Error loading details.</p>`;
+          });
+      }
+
+      function searchEvents() {
+        const query = document.getElementById("searchInput").value;
+        fetch(`/user/search-events?query=${query}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const tbody = document.querySelector("table.table tbody");
+            tbody.innerHTML = "";
+            data.forEach((event) => {
+              tbody.innerHTML += `
+          <tr>
+            <td><a href="#" onclick="showEventDetails(${event.id})">${
+                event.name
+              }</a></td>
+            <td>${new Date(event.date).toLocaleDateString()}</td>
+            <td>${event.location_name}</td>
+            <td>${event.category}</td>
+            <td><a href="#" onclick="showOrganizerDetails(${
+              event.organizer_id
+            })">${event.organizer_name}</a></td>
+            <td>
+              <button class="btn btn-primary btn-sm" id="register-btn-${
+                event.id
+              }" onclick="registerForEvent(${event.id})">
+                Register
+              </button>
+            </td>
+          </tr>
+        `;
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching search results:", error);
+            alert("Error fetching search results.");
+          });
+      }
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+        darkModeToggle.addEventListener("click", function () {
+          document.body.classList.toggle("dark-mode");
+
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          localStorage.setItem("darkMode", isDarkMode);
+        });
+
+        if (localStorage.getItem("darkMode") === "true") {
+          document.body.classList.add("dark-mode");
+        }
+      });
+    </script>
+    <script>
+      function showOrganizerDetails(organizerId) {
+        fetch(`/user/organizer/details/${organizerId}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Organizer not found");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const modalBody = document.querySelector(
+              "#eventDetailsModal .modal-body"
+            );
+            modalBody.innerHTML = `
+        <img src="/uploads/${data.profile_image}" alt="${data.first_name}'s profile image" class="profile-image2" />
+        <br><br>
+        <p>First Name: ${data.first_name}</p>
+        <p>Last Name: ${data.last_name}</p>
+        <p>Bio: ${data.bio}</p>
+      `;
+          })
+          .catch((error) => {
+            console.error("Error loading organizer details:", error);
+            const modalBody = document.querySelector(
+              "#eventDetailsModal .modal-body"
+            );
+            modalBody.innerHTML = `<p>Error loading details.</p>`;
+          });
+
+        $("#eventDetailsModal").modal("show");
+      }
+    </script>
+  </body>
+</html>

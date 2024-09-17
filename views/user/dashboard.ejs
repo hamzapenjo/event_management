@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <link rel="icon" href="/images/goevents5.png" type="image/x-icon" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <h3>User Panel</h3>
+        </div>
+        <ul class="list-unstyled components">
+          <li><a href="/user/dashboard">Dashboard</a></li>
+          <li><a href="/user/events">Events</a></li>
+          <li><a href="/user/registrations">My Registrations</a></li>
+        </ul>
+      </nav>
+
+      <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <div class="container-fluid">
+            <div class="navbar-nav ml-auto">
+              <div class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  id="navbarDropdown"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Account
+                </a>
+                <div
+                  class="dropdown-menu dropdown-menu-right"
+                  aria-labelledby="navbarDropdown"
+                >
+                  <a class="dropdown-item" href="/logout">Logout</a>
+                  <button id="dark-mode-toggle" class="dropdown-item">Toggle Dark Mode</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container mt-4">
+          <h2>Dashboard Overview</h2>
+            <br>
+          <div class="row d-flex">
+            <div class="col-lg-12 mb-4">
+              <div class="card">
+                <div class="card-header">Enter Your Interests</div>
+                <div class="card-body">
+                  <form method="POST" action="/user/update-interests">
+                    <div class="form-group">
+                      <label for="interests">Interests (comma-separated):</label>
+                      <input
+                        type="text"
+                        id="interests"
+                        name="interests"
+                        class="form-control"
+                        value="<%= interests %>"
+                        placeholder="e.g. Conference, Workshop, Meetup"
+                      />
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3">
+                      Save Interests
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 mb-4">
+              <div class="card">
+                <div class="card-header">Popular Events</div>
+                <div class="card-body">
+                  <div class="row">
+                    <% popularEvents.forEach(event => { %>
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <strong><%= event.name %></strong>
+                          <p>Date: <%= new Date(event.date).toLocaleDateString() %></p>
+                        </div>
+                      </div>
+                    </div>
+                    <% }) %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 mb-4">
+              <div class="card">
+                <div class="card-header">Randomly Selected Events</div>
+                <div class="card-body">
+                  <div class="row">
+                    <% randomEvents.forEach(event => { %>
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <strong><%= event.name %></strong>
+                          <p>Date: <%= new Date(event.date).toLocaleDateString() %></p>
+                        </div>
+                      </div>
+                    </div>
+                    <% }) %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12 mb-4">
+              <div class="card">
+                <div class="card-header">Recommended Events</div>
+                <div class="card-body">
+                  <div class="row">
+                    <% recommendedEvents.forEach(event => { %>
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <strong><%= event.name %></strong>
+                          <p>Date: <%= new Date(event.date).toLocaleDateString() %></p>
+                        </div>
+                      </div>
+                    </div>
+                    <% }) %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const darkModeToggle = document.getElementById("dark-mode-toggle");
+  
+          darkModeToggle.addEventListener("click", function () {
+            document.body.classList.toggle("dark-mode");
+  
+            const isDarkMode = document.body.classList.contains("dark-mode");
+            localStorage.setItem("darkMode", isDarkMode);
+          });
+  
+          if (localStorage.getItem("darkMode") === "true") {
+            document.body.classList.add("dark-mode");
+          }
+        });
+      </script>
+  </body>
+</html>
